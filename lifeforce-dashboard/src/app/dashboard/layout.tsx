@@ -2,33 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!session) {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
         router.push('/')
       } else {
-        setUser(session.user)
+        setUserEmail(data.session.user.email || '')
       }
-      setLoading(false)
-    }
-
-    checkAuth()
+    })
   }, [router])
 
   const handleSignOut = async () => {
@@ -36,40 +25,90 @@ export default function DashboardLayout({
     router.push('/')
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    )
-  }
+  const isDashboardHome = pathname === '/dashboard'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', background: '#F5F2EC', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold">
-              L
-            </div>
-            <span className="text-xl font-semibold">Lifeforce</span>
-          </Link>
-
-          <div className="flex items-center gap-6">
-            <span className="text-sm text-gray-600">{user?.email}</span>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 bg-gray-100 text-sm font-medium rounded hover:bg-gray-200 transition"
-            >
-              Sign Out
-            </button>
-          </div>
+      <header style={{
+        background: 'white',
+        borderBottom: '1px solid #e0e0e0',
+        padding: '16px 24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20 }}>
+          <div style={{
+            width: 36, height: 36, background: '#1a1a1a', borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-inter), sans-serif',
+          }}>L</div>
+          <span>Lifeforce</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>{userEmail}</span>
+          <button
+            onClick={handleSignOut}
+            style={{
+              padding: '8px 16px', background: '#f0f0f0', border: 'none',
+              borderRadius: 6, cursor: 'pointer', fontSize: 13,
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">{children}</main>
+      <div style={{ display: 'flex', flex: 1 }}>
+        {/* Sidebar */}
+        <aside style={{
+          width: 240, background: 'white', borderRight: '1px solid #e0e0e0',
+          padding: '24px 0', display: 'flex', flexDirection: 'column', flexShrink: 0,
+        }}>
+          <div style={{ padding: '0 16px', marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 12, padding: '0 8px' }}>
+              Dashboard
+            </div>
+            <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '10px 12px', borderRadius: 6, cursor: 'pointer',
+                fontSize: 14, marginBottom: 6,
+                background: isDashboardHome ? '#1a1a1a' : 'transparent',
+                color: isDashboardHome ? 'white' : '#1a1a1a',
+                fontWeight: isDashboardHome ? 500 : 400,
+              }}>
+                Attention
+              </div>
+            </Link>
+            <div style={{
+              padding: '10px 12px', borderRadius: 6, cursor: 'pointer',
+              fontSize: 14, color: '#999',
+            }}>
+              Pipeline
+            </div>
+          </div>
+
+          <div style={{ padding: '0 24px', marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 12 }}>
+              Cases
+            </div>
+            <div style={{ fontSize: 13, color: '#666', lineHeight: 2 }}>
+              <div>3 Red</div>
+              <div>2 Yellow</div>
+              <div>2 Green</div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main */}
+        <main style={{ flex: 1, padding: 32, overflowY: 'auto' }}>
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
