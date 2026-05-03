@@ -2,58 +2,45 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface CaseDetail {
   id: string
-  insured: {
-    first_name: string
-    last_name: string
-    dob: string
-    phone: string
-    email: string
-  }
-  policies: {
-    id: string
-    carrier: string
-    face_amount: number
-    premium_annual: number
-  }[]
+  insured: { first_name: string; last_name: string; dob: string; phone: string; email: string; age?: number; conditions?: string }
+  policies: { id: string; carrier: string; policy_number?: string; face_amount: number; premium_annual: number; issue_date?: string }[]
   stage: string
-  alertInfo: { status: string; reason?: string }
+  alertInfo: { status: string; reason?: string; days_since_contact?: number }
   last_contact_date?: string
   notes?: Array<{ id: string; content: string; is_public: boolean; created_at: string }>
   communication_log?: Array<{ id: string; type: string; outcome: string; created_at: string }>
   bids?: Array<{ id: string; amount: number; buyer: string; created_at: string; is_phantom: boolean }>
   documents?: Array<{ id: string; file_name: string; document_type: string }>
+  next_required_action?: string
 }
 
-const statusColor = (status: string) => {
-  if (status === 'red') return 'var(--status-red)'
-  if (status === 'yellow') return 'var(--status-amber)'
+const statusColor = (s: string) => {
+  if (s === 'red') return 'var(--status-red)'
+  if (s === 'yellow') return 'var(--status-amber)'
   return 'var(--status-green)'
 }
 
 const card: React.CSSProperties = {
   backgroundColor: 'var(--lf-surface)',
   border: '1px solid var(--lf-rule)',
-  borderRadius: '2px',
-  padding: '20px',
+  padding: '20px 24px',
   marginBottom: '12px',
 }
 
-const labelStyle: React.CSSProperties = {
+const fieldLabel: React.CSSProperties = {
   fontFamily: 'Sohne, sans-serif',
-  fontWeight: 500,
-  fontSize: '9px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
+  fontSize: '11px',
   color: 'var(--lf-warm-gray)',
-  marginBottom: '6px',
+  marginBottom: '3px',
 }
 
-const valueStyle: React.CSSProperties = {
+const fieldValue: React.CSSProperties = {
   fontFamily: 'Sohne, sans-serif',
-  fontSize: '13px',
+  fontSize: '14px',
   color: 'var(--lf-ink)',
 }
 
@@ -88,58 +75,61 @@ export default function CaseDetailPage() {
       if (res.ok) {
         setNewNote('')
         setNewNotePublic(false)
-        const caseRes = await fetch(`/api/cases/${caseId}`)
-        setCaseData(await caseRes.json())
+        const d = await (await fetch(`/api/cases/${caseId}`)).json()
+        setCaseData(d)
       }
     } finally {
       setSavingNote(false)
     }
   }
 
-  if (loading) {
-    return (
-      <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
-        Loading…
-      </p>
-    )
-  }
-
-  if (!caseData) {
-    return (
-      <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
-        Case not found
-      </p>
-    )
-  }
+  if (loading) return <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>Loading…</p>
+  if (!caseData) return <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>Case not found</p>
 
   const tabs = ['overview', 'medical', 'communication', 'bids', 'documents', 'notes', 'timeline']
 
   return (
     <div>
-      {/* Page Header */}
-      <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--lf-rule)' }}>
+      {/* Breadcrumb */}
+      <div style={{
+        fontFamily: 'Sohne, sans-serif',
+        fontWeight: 600,
+        fontSize: '10px',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }}>
+        <Link href="/dashboard" style={{ color: 'var(--lf-sage)', textDecoration: 'none' }}>← Dashboard</Link>
+        <span style={{ color: 'var(--lf-warm-gray)' }}>/</span>
+        <span style={{ color: 'var(--lf-warm-gray)' }}>Case Detail</span>
+      </div>
+
+      {/* Page Title */}
+      <div style={{ marginBottom: '32px' }}>
         <h1 style={{
           fontFamily: 'Canela, serif',
           fontWeight: 300,
           fontStyle: 'italic',
-          fontSize: '34px',
+          fontSize: '42px',
           color: 'var(--lf-ink)',
           letterSpacing: '-0.02em',
           marginBottom: '10px',
         }}>
           {caseData.insured.first_name} {caseData.insured.last_name}
         </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{
             fontFamily: 'Sohne, sans-serif',
-            fontSize: '11px',
-            fontWeight: 500,
-            letterSpacing: '0.06em',
+            fontSize: '10px',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
             color: statusColor(caseData.alertInfo.status),
             border: `1px solid ${statusColor(caseData.alertInfo.status)}`,
             padding: '3px 10px',
-            borderRadius: '2px',
           }}>
             {caseData.alertInfo.status}
           </span>
@@ -154,8 +144,8 @@ export default function CaseDetailPage() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--lf-rule)', marginBottom: '32px' }}>
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--lf-rule)', marginBottom: '36px' }}>
         {tabs.map(tab => (
           <button
             key={tab}
@@ -168,10 +158,10 @@ export default function CaseDetailPage() {
               background: 'none',
               cursor: 'pointer',
               fontFamily: 'Sohne, sans-serif',
-              fontWeight: 500,
+              fontWeight: 600,
               fontSize: '11px',
-              letterSpacing: '0.06em',
-              textTransform: 'capitalize',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
               color: activeTab === tab ? 'var(--lf-ink)' : 'var(--lf-warm-gray)',
               whiteSpace: 'nowrap',
             }}
@@ -181,102 +171,143 @@ export default function CaseDetailPage() {
         ))}
       </div>
 
-      {/* Two-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '40px' }}>
+      {/* Two-column */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '48px' }}>
         {/* Main */}
         <div>
-
           {activeTab === 'overview' && (
             <div>
-              <div style={{ ...labelStyle, marginBottom: '14px' }}>Policy Information</div>
               {caseData.policies.map(policy => (
                 <div key={policy.id} style={card}>
-                  <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '14px', color: 'var(--lf-ink)', marginBottom: '8px' }}>
-                    {policy.carrier}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '14px', color: 'var(--lf-ink)', marginBottom: '2px' }}>
+                      {policy.carrier}
+                    </div>
+                    {policy.policy_number && (
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-warm-gray)' }}>
+                        {policy.policy_number}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', gap: '24px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
                     <div>
-                      <div style={labelStyle}>Face Amount</div>
-                      <div style={{ ...valueStyle, fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px' }}>
-                        ${policy.face_amount >= 1000000
-                          ? `${(policy.face_amount / 1000000).toFixed(1)}M`
-                          : `${(policy.face_amount / 1000).toFixed(0)}K`}
+                      <div style={fieldLabel}>Face Amount</div>
+                      <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '24px', color: 'var(--lf-ink)' }}>
+                        ${policy.face_amount >= 1000000 ? `${(policy.face_amount / 1000000).toFixed(1)}M` : `${(policy.face_amount / 1000).toFixed(0)}K`}
                       </div>
                     </div>
                     <div>
-                      <div style={labelStyle}>Annual Premium</div>
-                      <div style={{ ...valueStyle, fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px' }}>
+                      <div style={fieldLabel}>Annual Premium</div>
+                      <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '24px', color: 'var(--lf-ink)' }}>
                         ${policy.premium_annual?.toLocaleString() ?? '—'}
                       </div>
                     </div>
+                    {policy.issue_date && (
+                      <div>
+                        <div style={fieldLabel}>Issue Date</div>
+                        <div style={fieldValue}>{new Date(policy.issue_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+
+              {/* Insured details */}
+              <div style={card}>
+                <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--lf-sage)', marginBottom: '16px' }}>
+                  Insured
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <div style={fieldLabel}>Date of Birth</div>
+                    <div style={fieldValue}>{caseData.insured.dob ? new Date(caseData.insured.dob).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}</div>
+                  </div>
+                  {caseData.insured.phone && (
+                    <div>
+                      <div style={fieldLabel}>Phone</div>
+                      <div style={fieldValue}>{caseData.insured.phone}</div>
+                    </div>
+                  )}
+                  {caseData.insured.email && (
+                    <div>
+                      <div style={fieldLabel}>Email</div>
+                      <div style={{ ...fieldValue, fontSize: '13px' }}>{caseData.insured.email}</div>
+                    </div>
+                  )}
+                  {caseData.insured.conditions && (
+                    <div>
+                      <div style={fieldLabel}>Conditions</div>
+                      <div style={fieldValue}>{caseData.insured.conditions}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab === 'medical' && (
-            <p style={valueStyle}>Medical information coming soon.</p>
+            <p style={fieldValue}>Medical information coming soon.</p>
           )}
 
           {activeTab === 'communication' && (
             <div>
-              <div style={{ ...labelStyle, marginBottom: '14px' }}>Communication Log</div>
               {caseData.communication_log && caseData.communication_log.length > 0
                 ? caseData.communication_log.map(entry => (
                   <div key={entry.id} style={card}>
-                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{entry.type}</div>
-                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)', marginBottom: '6px' }}>{entry.outcome}</div>
-                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{new Date(entry.created_at).toLocaleDateString()}</div>
+                    {/* Activity date in green */}
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--lf-sage)', marginBottom: '6px' }}>
+                      {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                    </div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '3px' }}>{entry.type}</div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>{entry.outcome}</div>
                   </div>
                 ))
-                : <p style={valueStyle}>No communication logged yet.</p>
+                : <p style={fieldValue}>No communication logged yet.</p>
               }
             </div>
           )}
 
           {activeTab === 'bids' && (
             <div>
-              <div style={{ ...labelStyle, marginBottom: '14px' }}>Offers Received</div>
               {caseData.bids && caseData.bids.filter(b => !b.is_phantom).length > 0
                 ? caseData.bids.filter(b => !b.is_phantom).map(bid => (
-                  <div key={bid.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div key={bid.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{bid.buyer}</div>
-                      <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px', color: 'var(--lf-ink)' }}>
-                        ${(bid.amount / 1000).toFixed(0)}K
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '14px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{bid.buyer}</div>
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>
+                        {new Date(bid.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>
-                      {new Date(bid.created_at).toLocaleDateString()}
+                    <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '28px', color: 'var(--lf-ink)' }}>
+                      ${(bid.amount / 1000).toFixed(0)}K
                     </div>
                   </div>
                 ))
-                : <p style={valueStyle}>No offers yet.</p>
+                : <p style={fieldValue}>No offers yet.</p>
               }
             </div>
           )}
 
           {activeTab === 'documents' && (
             <div>
-              <div style={{ ...labelStyle, marginBottom: '14px' }}>Documents</div>
               {caseData.documents && caseData.documents.length > 0
                 ? caseData.documents.map(doc => (
                   <div key={doc.id} style={card}>
-                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{doc.file_name}</div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '3px' }}>{doc.file_name}</div>
                     <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{doc.document_type}</div>
                   </div>
                 ))
-                : <p style={valueStyle}>No documents uploaded.</p>
+                : <p style={fieldValue}>No documents uploaded.</p>
               }
             </div>
           )}
 
           {activeTab === 'notes' && (
             <div>
-              {/* Add Note */}
-              <div style={{ ...card, marginBottom: '24px' }}>
-                <div style={{ ...labelStyle, marginBottom: '10px' }}>Add Note</div>
+              <div style={{ ...card, marginBottom: '20px' }}>
+                <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--lf-sage)', marginBottom: '12px' }}>
+                  Add Note
+                </div>
                 <textarea
                   value={newNote}
                   onChange={e => setNewNote(e.target.value)}
@@ -287,16 +318,16 @@ export default function CaseDetailPage() {
                     padding: '10px 12px',
                     backgroundColor: 'var(--lf-parchment)',
                     border: '1px solid var(--lf-rule-mid)',
-                    borderRadius: '2px',
                     fontFamily: 'Sohne, sans-serif',
                     fontSize: '13px',
                     color: 'var(--lf-ink)',
                     outline: 'none',
                     resize: 'vertical',
                     boxSizing: 'border-box',
+                    marginBottom: '12px',
                   }}
                 />
-                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-warm-gray)', cursor: 'pointer' }}>
                     <input type="checkbox" checked={newNotePublic} onChange={e => setNewNotePublic(e.target.checked)} />
                     Visible to Jim
@@ -309,100 +340,103 @@ export default function CaseDetailPage() {
                       backgroundColor: 'var(--lf-ink)',
                       color: 'var(--lf-parchment)',
                       border: 'none',
-                      borderRadius: '2px',
                       fontFamily: 'Sohne, sans-serif',
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      letterSpacing: '0.06em',
+                      fontWeight: 600,
+                      fontSize: '10px',
+                      letterSpacing: '0.08em',
                       textTransform: 'uppercase',
-                      cursor: savingNote ? 'not-allowed' : 'pointer',
-                      opacity: savingNote || !newNote.trim() ? 0.5 : 1,
+                      cursor: !newNote.trim() ? 'not-allowed' : 'pointer',
+                      opacity: !newNote.trim() ? 0.5 : 1,
                     }}
                   >
                     {savingNote ? 'Saving…' : 'Save'}
                   </button>
                 </div>
               </div>
-
-              {/* Notes list */}
               {caseData.notes && caseData.notes.length > 0
                 ? caseData.notes.map(note => (
-                  <div key={note.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                  <div key={note.id} style={{ ...card, display: 'flex', gap: '16px', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '8px', lineHeight: 1.6 }}>{note.content}</div>
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-ink)', lineHeight: 1.6, marginBottom: '8px' }}>{note.content}</div>
                       <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{new Date(note.created_at).toLocaleDateString()}</div>
                     </div>
-                    <span style={{
-                      fontFamily: 'Sohne, sans-serif',
-                      fontSize: '10px',
-                      fontWeight: 500,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      color: note.is_public ? 'var(--status-green)' : 'var(--lf-warm-gray)',
-                      flexShrink: 0,
-                    }}>
+                    <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: note.is_public ? 'var(--status-green)' : 'var(--lf-warm-gray)', flexShrink: 0 }}>
                       {note.is_public ? 'Public' : 'Private'}
                     </span>
                   </div>
                 ))
-                : <p style={valueStyle}>No notes yet.</p>
+                : <p style={fieldValue}>No notes yet.</p>
               }
             </div>
           )}
 
           {activeTab === 'timeline' && (
-            <p style={valueStyle}>Timeline coming soon.</p>
+            <p style={fieldValue}>Timeline coming soon.</p>
           )}
         </div>
 
         {/* Sidebar */}
         <div>
-          <div style={card}>
-            <div style={labelStyle}>Alert Status</div>
+          {/* Dark action panel */}
+          <div style={{
+            backgroundColor: 'var(--lf-ink)',
+            padding: '24px',
+            marginBottom: '12px',
+          }}>
             <div style={{
               fontFamily: 'Sohne, sans-serif',
-              fontSize: '11px',
-              fontWeight: 500,
-              letterSpacing: '0.06em',
+              fontWeight: 600,
+              fontSize: '9px',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(245,242,236,0.5)',
+              marginBottom: '10px',
+            }}>
+              Next Required Action
+            </div>
+            <div style={{
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '14px',
+              color: 'var(--lf-parchment)',
+              lineHeight: 1.5,
+            }}>
+              {caseData.next_required_action || caseData.alertInfo.reason || 'Review case status'}
+            </div>
+          </div>
+
+          {/* Stage */}
+          <div style={card}>
+            <div style={fieldLabel}>Current Stage</div>
+            <div style={fieldValue}>{caseData.stage}</div>
+          </div>
+
+          {/* Status */}
+          <div style={card}>
+            <div style={fieldLabel}>Alert Status</div>
+            <span style={{
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '10px',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
               textTransform: 'uppercase',
               color: statusColor(caseData.alertInfo.status),
               border: `1px solid ${statusColor(caseData.alertInfo.status)}`,
-              padding: '4px 10px',
-              borderRadius: '2px',
+              padding: '3px 10px',
               display: 'inline-block',
-              marginBottom: caseData.alertInfo.reason ? '8px' : 0,
+              marginTop: '6px',
             }}>
               {caseData.alertInfo.status}
-            </div>
-            {caseData.alertInfo.reason && (
-              <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-warm-gray)' }}>
-                {caseData.alertInfo.reason}
-              </div>
-            )}
+            </span>
           </div>
 
+          {/* Last contact */}
           <div style={card}>
-            <div style={labelStyle}>Stage</div>
-            <div style={valueStyle}>{caseData.stage}</div>
-          </div>
-
-          <div style={card}>
-            <div style={labelStyle}>Last Contact</div>
-            <div style={valueStyle}>
+            <div style={fieldLabel}>Last Contact</div>
+            <div style={fieldValue}>
               {caseData.last_contact_date
-                ? new Date(caseData.last_contact_date).toLocaleDateString()
+                ? new Date(caseData.last_contact_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                 : 'None recorded'}
             </div>
-          </div>
-
-          <div style={card}>
-            <div style={labelStyle}>Insured</div>
-            {caseData.insured.phone && (
-              <div style={{ ...valueStyle, marginBottom: '4px' }}>{caseData.insured.phone}</div>
-            )}
-            {caseData.insured.email && (
-              <div style={{ ...valueStyle, fontSize: '12px', color: 'var(--lf-warm-gray)' }}>{caseData.insured.email}</div>
-            )}
           </div>
         </div>
       </div>
