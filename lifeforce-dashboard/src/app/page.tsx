@@ -34,28 +34,28 @@ export default function LoginPage() {
       justifyContent: 'center',
       backgroundColor: 'var(--lf-parchment)',
     }}>
-      <div style={{ width: '100%', maxWidth: '440px', padding: '0 24px' }}>
+      <div style={{ width: '100%', maxWidth: '360px', padding: '0 24px' }}>
 
         {/* Wordmark */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{
             fontFamily: 'Canela, serif',
             fontWeight: 300,
             fontStyle: 'italic',
-            fontSize: '36px',
-            color: 'var(--lf-ink)',
+            fontSize: '42px',
+            color: 'var(--lf-brand-green)',
             letterSpacing: '-0.01em',
             lineHeight: 1,
           }}>
             Lifeforce
           </div>
-          <div style={{ width: '48px', height: '1px', backgroundColor: 'rgba(26,26,26,0.25)', margin: '10px auto' }} />
+          <div style={{ width: '48px', height: '1px', backgroundColor: 'var(--lf-brand-green)', margin: '8px auto', opacity: 0.5 }} />
           <div style={{
             fontFamily: 'Sohne, sans-serif',
-            fontWeight: 800,
-            fontSize: '9px',
-            letterSpacing: '0.18em',
-            color: 'var(--lf-warm-gray)',
+            fontWeight: 500,
+            fontSize: '10px',
+            letterSpacing: '0.22em',
+            color: 'var(--lf-brand-green)',
             textTransform: 'uppercase',
           }}>
             Financial
@@ -65,37 +65,40 @@ export default function LoginPage() {
         {/* Card */}
         <div style={{
           backgroundColor: 'var(--lf-surface)',
-          border: '1px solid var(--lf-rule)',
-          padding: '40px',
+          padding: '36px 32px',
+          borderRadius: '4px',
         }}>
           {/* Section label */}
           <div style={{
             fontFamily: 'Sohne, sans-serif',
-            fontWeight: 600,
+            fontWeight: 500,
             fontSize: '10px',
-            letterSpacing: '0.14em',
+            letterSpacing: '0.16em',
             textTransform: 'uppercase',
             color: 'var(--lf-sage)',
-            marginBottom: '20px',
+            marginBottom: '8px',
           }}>
             Portfolio Access
           </div>
 
-          <p style={{
-            fontFamily: 'Sohne, sans-serif',
-            fontSize: '13px',
-            color: 'var(--lf-warm-gray)',
+          <h1 style={{
+            fontFamily: 'Canela, serif',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            fontSize: '24px',
+            color: 'var(--lf-ink)',
             marginBottom: '28px',
-            lineHeight: 1.5,
+            lineHeight: 1.2,
           }}>
-            Enter your credentials to continue
-          </p>
+            Sign in to your account
+          </h1>
 
           {error && (
             <div style={{
               marginBottom: '20px',
               padding: '10px 14px',
               border: '1px solid var(--status-red)',
+              borderRadius: '3px',
               fontFamily: 'Sohne, sans-serif',
               fontSize: '13px',
               color: 'var(--status-red)',
@@ -105,15 +108,16 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSignIn}>
+            {/* Email */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'block',
                 fontFamily: 'Sohne, sans-serif',
-                fontWeight: 600,
+                fontWeight: 500,
                 fontSize: '10px',
-                letterSpacing: '0.1em',
+                letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--lf-warm-gray)',
+                color: '#6A6A6A',
                 marginBottom: '8px',
               }}>
                 Email Address
@@ -122,13 +126,14 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@lifeforcefinancial.com"
                 required
                 style={{
                   width: '100%',
                   padding: '12px 14px',
-                  backgroundColor: 'var(--lf-parchment)',
+                  backgroundColor: 'var(--lf-white)',
                   border: '1px solid var(--lf-rule-mid)',
+                  borderRadius: '3px',
                   fontFamily: 'Sohne, sans-serif',
                   fontSize: '14px',
                   color: 'var(--lf-ink)',
@@ -138,19 +143,28 @@ export default function LoginPage() {
               />
             </div>
 
-            <div style={{ marginBottom: '28px' }}>
+            {/* Password row: label + forgot */}
+            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label style={{
-                display: 'block',
                 fontFamily: 'Sohne, sans-serif',
-                fontWeight: 600,
+                fontWeight: 500,
                 fontSize: '10px',
-                letterSpacing: '0.1em',
+                letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--lf-warm-gray)',
-                marginBottom: '8px',
+                color: '#6A6A6A',
               }}>
                 Password
               </label>
+              <a href="#forgot" style={{
+                fontFamily: 'Sohne, sans-serif',
+                fontSize: '12px',
+                color: 'var(--lf-sage)',
+                textDecoration: 'none',
+              }}>
+                Forgot password?
+              </a>
+            </div>
+            <div style={{ marginBottom: '24px' }}>
               <input
                 type="password"
                 value={password}
@@ -160,8 +174,9 @@ export default function LoginPage() {
                 style={{
                   width: '100%',
                   padding: '12px 14px',
-                  backgroundColor: 'var(--lf-parchment)',
+                  backgroundColor: 'var(--lf-white)',
                   border: '1px solid var(--lf-rule-mid)',
+                  borderRadius: '3px',
                   fontFamily: 'Sohne, sans-serif',
                   fontSize: '14px',
                   color: 'var(--lf-ink)',
@@ -171,16 +186,6 @@ export default function LoginPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)', cursor: 'pointer' }}>
-                <input type="checkbox" />
-                Remember me
-              </label>
-              <a href="#forgot" style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-sage)', textDecoration: 'none' }}>
-                Forgot password?
-              </a>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -188,12 +193,13 @@ export default function LoginPage() {
                 width: '100%',
                 padding: '14px',
                 backgroundColor: 'var(--lf-ink)',
-                color: 'var(--lf-parchment)',
+                color: '#FFFFFF',
                 border: 'none',
+                borderRadius: '3px',
                 fontFamily: 'Sohne, sans-serif',
-                fontWeight: 600,
-                fontSize: '11px',
-                letterSpacing: '0.1em',
+                fontWeight: 500,
+                fontSize: '12px',
+                letterSpacing: '0.16em',
                 textTransform: 'uppercase',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1,
@@ -203,6 +209,24 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
+
+        {/* Footer */}
+        <div style={{
+          marginTop: '20px',
+          textAlign: 'center',
+          fontFamily: 'Sohne, sans-serif',
+          fontSize: '12px',
+          color: '#7A7A7A',
+          lineHeight: 1.6,
+        }}>
+          Access is restricted to authorized personnel.<br />
+          Contact{' '}
+          <a href="mailto:admin@lifeforcefinancial.com" style={{ color: 'var(--lf-sage)', textDecoration: 'none' }}>
+            admin@lifeforcefinancial.com
+          </a>
+          {' '}for access.
+        </div>
+
       </div>
     </div>
   )
