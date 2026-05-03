@@ -2,50 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: #1a1a1a;
-  --color-alert-red: #DC2626;
-  --color-alert-yellow: #F59E0B;
-  --color-alert-green: #10B981;
-  --color-neutral-light: #F5F2EC;
-  --color-neutral-border: #e0e0e0;
-  --color-neutral-text: #666;
+/* ── Lifeforce Financial Design System ── */
+/* Source: DESIGN.md by Takashi, CDO — AlexLabs */
+
+@font-face {
+  font-family: 'Canela';
+  src: url('/fonts/Canela-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Canela';
+  src: url('/fonts/Canela-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sohne';
+  src: url('/fonts/Sohne-Buch.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sohne';
+  src: url('/fonts/Sohne-Kraftig.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sohne';
+  src: url('/fonts/Sohne-Extrafett.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
 }
 
-* {
+:root {
+  /* ── Brand Palette ── */
+  --lf-parchment:  #F5F2EC;   /* Primary background — all surfaces */
+  --lf-surface:    #EDE9E0;   /* Cards, stat blocks, elevated content */
+  --lf-ink:        #1A1A1A;   /* Primary text, headings, wordmark */
+  --lf-warm-gray:  #8A8A85;   /* Body copy, secondary text, metadata */
+  --lf-sage:       #5B7B6F;   /* Accent — labels, links, outline CTAs */
+  --lf-sage-light: #8FB5AB;   /* Sage hover, light accent */
+  --lf-rule:       rgba(26,26,26,0.08);   /* Dividers, card borders */
+  --lf-rule-mid:   rgba(26,26,26,0.14);   /* Input borders, form fields */
+
+  /* ── Status (functional, not brand accent) ── */
+  --status-red:    #B83232;   /* No contact ≥14d or open req ≥21d */
+  --status-amber:  #B07830;   /* No contact 7–13d or open req 14–20d */
+  --status-green:  #5B7B6F;   /* On track (same as sage) */
+
+  /* ── Spacing ── */
+  --spacing-page:    56px;
+  --spacing-section: 64px;
+  --spacing-card:    28px;
+  --spacing-tight:   16px;
+}
+
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--color-neutral-light);
-  color: var(--color-primary);
-  line-height: 1.6;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: 'Sohne', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 400;
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--lf-parchment);
+  color: var(--lf-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-  border-bottom: 1px solid var(--color-neutral-border);
-  transition: border-color 0.2s;
+/* ── Typography ── */
+
+/* Display — Canela Light Italic */
+.font-display {
+  font-family: 'Canela', Georgia, serif;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
 }
 
-a:hover {
-  border-bottom-color: var(--color-primary);
+/* Headline — Söhne Extrafett */
+h1, h2, h3, h4, h5, h6,
+.font-headline {
+  font-family: 'Sohne', -apple-system, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--lf-ink);
 }
 
-button {
-  cursor: pointer;
-  transition: all 0.2s;
+/* Body — Söhne Buch (default) */
+p, .font-body {
+  font-family: 'Sohne', -apple-system, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--lf-warm-gray);
 }
 
-input, textarea, select {
-  font-family: inherit;
+/* Label — Söhne Kräftig, uppercase, tracked */
+.label, .font-label {
+  font-family: 'Sohne', -apple-system, sans-serif;
+  font-weight: 500;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--lf-warm-gray);
 }
+
+/* ── What Never Appears in Lifeforce Design ── */
+/* ❌ box-shadow    — use border + surface contrast only  */
+/* ❌ gradients     — flat surfaces only                  */
+/* ❌ border-radius > 3px                                 */
+/* ❌ white (#fff)  — use --lf-parchment or --lf-surface  */
+/* ❌ blue palette  — sage is the only cool-tone accent   */
+/* ❌ sage as fill  — accent text/border only             */
+/* ❌ centered body text — left-aligned always            */
