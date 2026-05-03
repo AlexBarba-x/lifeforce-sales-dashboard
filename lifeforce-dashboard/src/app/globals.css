@@ -45,14 +45,18 @@
   /* ── Brand Palette ── */
   --lf-parchment:   #F5F3EF;   /* Primary background — all surfaces */
   --lf-surface:     #EFECE6;   /* Cards, stat blocks, elevated content */
+  --lf-form-bg:     #EDEBE7;   /* Form card background (darker than surface) */
   --lf-white:       #FFFFFF;   /* Form inputs, case cards */
-  --lf-ink:         #2A2A2A;   /* Primary text, headings */
-  --lf-brand-green: #2C3E35;   /* Wordmark, logo color */
-  --lf-warm-gray:   #7A7A7A;   /* Body copy, secondary text, metadata */
+  --lf-ink:         #1A1A1A;   /* Primary text, headings */
+  --lf-brand-green: #2D3D35;   /* Wordmark, logo color */
+  --lf-warm-gray:   #6B6B6B;   /* Body copy, secondary text, metadata */
   --lf-sage:        #6B8F71;   /* Accent — labels, links, active dates */
   --lf-sage-light:  #8FB5AB;   /* Sage hover, light accent */
-  --lf-rule:        #E8E5DE;   /* Dividers, card borders */
-  --lf-rule-mid:    #D8D4CC;   /* Input borders, form fields */
+  --lf-rule:        #E5E3DF;   /* Dividers, card borders */
+  --lf-rule-mid:    #D9D9D9;   /* Input borders, form fields */
+  --status-red-urg: #C4452C;   /* Urgent/requires action */
+  --status-amr-wrn: #D4A017;   /* Warning/follow-up */
+  --status-grn-ok:  #6B8F71;   /* On track (same as sage) */
 
   /* ── Status (functional, not brand accent) ── */
   --status-red:    #B83232;   /* No contact ≥14d or open req ≥21d */

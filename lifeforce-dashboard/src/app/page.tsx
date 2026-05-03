@@ -64,9 +64,10 @@ export default function LoginPage() {
 
         {/* Card */}
         <div style={{
-          backgroundColor: 'var(--lf-surface)',
-          padding: '36px 32px',
-          borderRadius: '4px',
+          backgroundColor: 'var(--lf-form-bg)',
+          padding: '48px',
+          borderRadius: '0px',
+          boxShadow: '0 1px 3px rgba(26,26,26,0.1)',
         }}>
           {/* Section label */}
           <div style={{
@@ -199,13 +200,13 @@ export default function LoginPage() {
                 fontFamily: 'Sohne, sans-serif',
                 fontWeight: 500,
                 fontSize: '12px',
-                letterSpacing: '0.16em',
+                letterSpacing: '2px',
                 textTransform: 'uppercase',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1,
               }}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'SIGNING IN…' : 'SIGN IN'}
             </button>
           </form>
         </div>

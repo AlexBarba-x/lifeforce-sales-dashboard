@@ -413,10 +413,10 @@ export default function CaseDetailPage() {
               {caseData.active_alerts.map(alert => (
                 <div key={alert.id} style={{
                   backgroundColor: '#FFFFFF', border: '1px solid var(--lf-rule)',
-                  borderLeft: `3px solid ${alert.kind === 'red' ? '#C45C3E' : '#6B8F71'}`,
+                  borderLeft: `3px solid ${alert.kind === 'red' ? '#C4452C' : '#6B8F71'}`,
                   padding: '16px', marginBottom: '4px',
                 }}>
-                  <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '12px', color: alert.kind === 'red' ? '#D4735C' : '#8B956D', marginBottom: '5px' }}>
+                  <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '12px', color: alert.kind === 'red' ? '#C4452C' : '#6B8F71', marginBottom: '5px' }}>
                     {alert.title}
                   </div>
                   <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: '#3A3A3A', lineHeight: 1.5 }}>

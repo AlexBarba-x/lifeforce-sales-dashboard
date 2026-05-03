@@ -19,8 +19,8 @@ interface GroupedCases {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  red: '#C45C3E',
-  yellow: '#D4A84B',
+  red: '#C4452C',
+  yellow: '#D4A017',
   green: '#6B8F71',
 }
 
@@ -59,8 +59,8 @@ function CaseCard({ c, status }: { c: Case; status: string }) {
       }}>
         {/* Status dot */}
         <div style={{
-          width: '10px',
-          height: '10px',
+          width: '8px',
+          height: '8px',
           borderRadius: '50%',
           backgroundColor: dotColor,
           flexShrink: 0,
