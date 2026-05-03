@@ -35,34 +35,108 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F5F2EC] to-[#FAF8F3]">
-      <div className="w-full max-w-[420px] p-10 bg-white rounded-lg shadow-lg">
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg">
-            L
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'var(--lf-parchment)',
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '420px',
+        padding: '48px',
+        backgroundColor: 'var(--lf-surface)',
+        border: '1px solid var(--lf-rule)',
+        borderRadius: '3px',
+      }}>
+
+        {/* Wordmark */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            fontFamily: 'Canela, serif',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            fontSize: '26px',
+            color: 'var(--lf-ink)',
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+          }}>
+            Lifeforce
           </div>
-          <span className="text-2xl font-semibold ml-3">Lifeforce</span>
+          <div style={{
+            width: '32px',
+            height: '1px',
+            backgroundColor: 'var(--lf-ink)',
+            margin: '10px auto',
+            opacity: 0.2,
+          }} />
+          <div style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontWeight: 800,
+            fontSize: '9px',
+            letterSpacing: '0.14em',
+            color: 'var(--lf-warm-gray)',
+            textTransform: 'uppercase',
+          }}>
+            Financial
+          </div>
         </div>
 
         {/* Header */}
-        <h1 className="text-4xl text-center mb-2">Welcome</h1>
-        <p className="text-sm text-gray-600 text-center mb-8">
-          Enter your credentials to access the dashboard
+        <h1 style={{
+          fontFamily: 'Canela, serif',
+          fontWeight: 300,
+          fontStyle: 'italic',
+          fontSize: '32px',
+          color: 'var(--lf-ink)',
+          textAlign: 'center',
+          marginBottom: '8px',
+          letterSpacing: '-0.02em',
+        }}>
+          Welcome back
+        </h1>
+        <p style={{
+          fontFamily: 'Sohne, sans-serif',
+          fontWeight: 400,
+          fontSize: '13px',
+          color: 'var(--lf-warm-gray)',
+          textAlign: 'center',
+          marginBottom: '36px',
+        }}>
+          Sign in to access your dashboard
         </p>
 
-        {/* Error Message */}
+        {/* Error */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+          <div style={{
+            marginBottom: '20px',
+            padding: '12px 16px',
+            backgroundColor: 'var(--lf-parchment)',
+            border: '1px solid var(--status-red)',
+            borderRadius: '2px',
+            fontFamily: 'Sohne, sans-serif',
+            fontSize: '13px',
+            color: 'var(--status-red)',
+          }}>
             {error}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSignIn} className="space-y-5">
+        <form onSubmit={handleSignIn}>
           {/* Email */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase">
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '10px',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--lf-warm-gray)',
+              marginBottom: '8px',
+            }}>
               Email Address
             </label>
             <input
@@ -71,13 +145,33 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black focus:bg-gray-50 transition"
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                backgroundColor: 'var(--lf-parchment)',
+                border: '1px solid var(--lf-rule-mid)',
+                borderRadius: '2px',
+                fontFamily: 'Sohne, sans-serif',
+                fontSize: '14px',
+                color: 'var(--lf-ink)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
 
           {/* Password */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase">
+          <div style={{ marginBottom: '28px' }}>
+            <label style={{
+              display: 'block',
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '10px',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--lf-warm-gray)',
+              marginBottom: '8px',
+            }}>
               Password
             </label>
             <input
@@ -86,37 +180,72 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black focus:bg-gray-50 transition"
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                backgroundColor: 'var(--lf-parchment)',
+                border: '1px solid var(--lf-rule-mid)',
+                borderRadius: '2px',
+                fontFamily: 'Sohne, sans-serif',
+                fontSize: '14px',
+                color: 'var(--lf-ink)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
 
-          {/* Remember Me */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="remember"
-              className="w-4 h-4 cursor-pointer"
-            />
-            <label htmlFor="remember" className="text-sm cursor-pointer">
+          {/* Remember + Forgot */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '28px',
+          }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '13px',
+              color: 'var(--lf-warm-gray)',
+              cursor: 'pointer',
+            }}>
+              <input type="checkbox" id="remember" style={{ cursor: 'pointer' }} />
               Remember me
             </label>
+            <a href="#forgot" style={{
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '12px',
+              color: 'var(--lf-sage)',
+              textDecoration: 'none',
+            }}>
+              Forgot password?
+            </a>
           </div>
 
           {/* Sign In Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-black text-white rounded-lg font-semibold mt-6 hover:bg-gray-800 disabled:opacity-50 transition"
+            style={{
+              width: '100%',
+              padding: '14px',
+              backgroundColor: 'var(--lf-ink)',
+              color: 'var(--lf-parchment)',
+              border: 'none',
+              borderRadius: '2px',
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '13px',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+            }}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in…' : 'Sign In'}
           </button>
-
-          {/* Forgot Password */}
-          <div className="text-center mt-4">
-            <a href="#forgot" className="text-sm">
-              Forgot password?
-            </a>
-          </div>
         </form>
       </div>
     </div>

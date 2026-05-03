@@ -27,6 +27,36 @@ interface CaseDetail {
   documents?: Array<{ id: string; file_name: string; document_type: string }>
 }
 
+const statusColor = (status: string) => {
+  if (status === 'red') return 'var(--status-red)'
+  if (status === 'yellow') return 'var(--status-amber)'
+  return 'var(--status-green)'
+}
+
+const card: React.CSSProperties = {
+  backgroundColor: 'var(--lf-surface)',
+  border: '1px solid var(--lf-rule)',
+  borderRadius: '2px',
+  padding: '20px',
+  marginBottom: '12px',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: 'Sohne, sans-serif',
+  fontWeight: 500,
+  fontSize: '9px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  color: 'var(--lf-warm-gray)',
+  marginBottom: '6px',
+}
+
+const valueStyle: React.CSSProperties = {
+  fontFamily: 'Sohne, sans-serif',
+  fontSize: '13px',
+  color: 'var(--lf-ink)',
+}
+
 export default function CaseDetailPage() {
   const params = useParams()
   const caseId = params.id as string
@@ -38,348 +68,340 @@ export default function CaseDetailPage() {
   const [savingNote, setSavingNote] = useState(false)
 
   useEffect(() => {
-    const fetchCase = async () => {
-      try {
-        const res = await fetch(`/api/cases/${caseId}`)
-        const data = await res.json()
-        setCaseData(data)
-      } catch (error) {
-        console.error('Error fetching case:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     if (caseId) {
-      fetchCase()
+      fetch(`/api/cases/${caseId}`)
+        .then(r => r.json())
+        .then(d => { setCaseData(d); setLoading(false) })
+        .catch(() => setLoading(false))
     }
   }, [caseId])
 
-  const getAlertColor = (status: string) => {
-    switch (status) {
-      case 'red':
-        return '#DC2626'
-      case 'yellow':
-        return '#F59E0B'
-      case 'green':
-        return '#10B981'
-      default:
-        return '#6B7280'
-    }
-  }
-
-  if (loading) {
-    return <div className="py-12 text-center">Loading case...</div>
-  }
-
-  if (!caseData) {
-    return <div className="py-12 text-center">Case not found</div>
-  }
-
   const handleSaveNote = async () => {
     if (!newNote.trim()) return
-
     setSavingNote(true)
     try {
       const res = await fetch('/api/cases/' + caseId + '/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: newNote,
-          is_public: newNotePublic,
-        }),
+        body: JSON.stringify({ content: newNote, is_public: newNotePublic }),
       })
-
       if (res.ok) {
         setNewNote('')
         setNewNotePublic(false)
-        // Refetch case data
         const caseRes = await fetch(`/api/cases/${caseId}`)
-        const data = await caseRes.json()
-        setCaseData(data)
+        setCaseData(await caseRes.json())
       }
-    } catch (error) {
-      console.error('Error saving note:', error)
     } finally {
       setSavingNote(false)
     }
   }
 
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'medical', label: 'Medical' },
-    { id: 'communication', label: 'Communication' },
-    { id: 'bids', label: 'Bids' },
-    { id: 'documents', label: 'Documents' },
-    { id: 'notes', label: 'Notes' },
-    { id: 'timeline', label: 'Timeline' },
-  ]
+  if (loading) {
+    return (
+      <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+        Loading…
+      </p>
+    )
+  }
+
+  if (!caseData) {
+    return (
+      <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+        Case not found
+      </p>
+    )
+  }
+
+  const tabs = ['overview', 'medical', 'communication', 'bids', 'documents', 'notes', 'timeline']
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-gray-200">
-        <h1 className="text-3xl font-semibold mb-2">
+      {/* Page Header */}
+      <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--lf-rule)' }}>
+        <h1 style={{
+          fontFamily: 'Canela, serif',
+          fontWeight: 300,
+          fontStyle: 'italic',
+          fontSize: '34px',
+          color: 'var(--lf-ink)',
+          letterSpacing: '-0.02em',
+          marginBottom: '10px',
+        }}>
           {caseData.insured.first_name} {caseData.insured.last_name}
         </h1>
-        <div className="flex items-center gap-4">
-          <span
-            className="px-3 py-1 rounded-full text-white text-sm font-medium"
-            style={{ backgroundColor: getAlertColor(caseData.alertInfo.status) }}
-          >
-            {caseData.alertInfo.status.toUpperCase()}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontSize: '11px',
+            fontWeight: 500,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: statusColor(caseData.alertInfo.status),
+            border: `1px solid ${statusColor(caseData.alertInfo.status)}`,
+            padding: '3px 10px',
+            borderRadius: '2px',
+          }}>
+            {caseData.alertInfo.status}
           </span>
-          <span className="text-gray-600 text-sm">{caseData.alertInfo.reason}</span>
-          <span className="text-gray-600 text-sm">Stage: {caseData.stage}</span>
+          {caseData.alertInfo.reason && (
+            <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+              {caseData.alertInfo.reason}
+            </span>
+          )}
+          <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+            {caseData.stage}
+          </span>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <div className="flex gap-8 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`pb-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition ${
-                activeTab === tab.id
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-600 hover:text-black'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--lf-rule)', marginBottom: '32px' }}>
+        {tabs.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '10px 0',
+              marginRight: '24px',
+              border: 'none',
+              borderBottom: `2px solid ${activeTab === tab ? 'var(--lf-ink)' : 'transparent'}`,
+              background: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '11px',
+              letterSpacing: '0.06em',
+              textTransform: 'capitalize',
+              color: activeTab === tab ? 'var(--lf-ink)' : 'var(--lf-warm-gray)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* Tab Content */}
-      <div className="grid grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="col-span-2">
-          {/* Overview Tab */}
+      {/* Two-column layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '40px' }}>
+        {/* Main */}
+        <div>
+
           {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Policy Information</h2>
-                {caseData.policies.map((policy) => (
-                  <div key={policy.id} className="p-4 border border-gray-200 rounded-lg">
-                    <p className="font-semibold">{policy.carrier}</p>
-                    <p className="text-sm text-gray-600">${(policy.face_amount / 1000000).toFixed(1)}M face</p>
-                    <p className="text-sm text-gray-600">${policy.premium_annual}/year</p>
+            <div>
+              <div style={{ ...labelStyle, marginBottom: '14px' }}>Policy Information</div>
+              {caseData.policies.map(policy => (
+                <div key={policy.id} style={card}>
+                  <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '14px', color: 'var(--lf-ink)', marginBottom: '8px' }}>
+                    {policy.carrier}
                   </div>
-                ))}
-              </section>
-            </div>
-          )}
-
-          {/* Medical Tab */}
-          {activeTab === 'medical' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Medical History</h2>
-                <p className="text-gray-600">Medical information coming soon...</p>
-              </section>
-            </div>
-          )}
-
-          {/* Communication Tab */}
-          {activeTab === 'communication' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Communication Log</h2>
-                {caseData.communication_log && caseData.communication_log.length > 0 ? (
-                  <div className="space-y-3">
-                    {caseData.communication_log.map((entry) => (
-                      <div key={entry.id} className="p-4 border border-gray-200 rounded-lg">
-                        <p className="font-semibold text-sm">{entry.type}</p>
-                        <p className="text-sm text-gray-600 mt-1">{entry.outcome}</p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(entry.created_at).toLocaleDateString()}
-                        </p>
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <div>
+                      <div style={labelStyle}>Face Amount</div>
+                      <div style={{ ...valueStyle, fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px' }}>
+                        ${policy.face_amount >= 1000000
+                          ? `${(policy.face_amount / 1000000).toFixed(1)}M`
+                          : `${(policy.face_amount / 1000).toFixed(0)}K`}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-600">No communication logged yet</p>
-                )}
-              </section>
-            </div>
-          )}
-
-          {/* Bids Tab */}
-          {activeTab === 'bids' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Offers Received</h2>
-                {caseData.bids && caseData.bids.length > 0 ? (
-                  <div className="space-y-3">
-                    {caseData.bids
-                      .filter((bid) => !bid.is_phantom)
-                      .map((bid) => (
-                        <div key={bid.id} className="p-4 border border-gray-200 rounded-lg">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-semibold">{bid.buyer}</p>
-                              <p className="text-sm text-gray-600 mt-1">
-                                ${(bid.amount / 1000).toFixed(0)}K
-                              </p>
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              {new Date(bid.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-600">No offers yet</p>
-                )}
-              </section>
-            </div>
-          )}
-
-          {/* Documents Tab */}
-          {activeTab === 'documents' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Documents</h2>
-                {caseData.documents && caseData.documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {caseData.documents.map((doc) => (
-                      <div key={doc.id} className="p-4 border border-gray-200 rounded-lg">
-                        <p className="font-semibold text-sm">{doc.file_name}</p>
-                        <p className="text-xs text-gray-600 mt-1">{doc.document_type}</p>
+                    </div>
+                    <div>
+                      <div style={labelStyle}>Annual Premium</div>
+                      <div style={{ ...valueStyle, fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px' }}>
+                        ${policy.premium_annual?.toLocaleString() ?? '—'}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-600">No documents uploaded</p>
-                )}
-              </section>
-            </div>
-          )}
-
-          {/* Notes Tab */}
-          {activeTab === 'notes' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Notes</h2>
-
-                {/* Add Note Form */}
-                <div className="p-4 border border-gray-200 rounded-lg mb-6 bg-gray-50">
-                  <textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Add a note..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black text-sm"
-                    rows={3}
-                  />
-                  <div className="mt-3 flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={newNotePublic}
-                        onChange={(e) => setNewNotePublic(e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <span>Make public (visible to Jim)</span>
-                    </label>
-                    <button
-                      onClick={handleSaveNote}
-                      disabled={savingNote || !newNote.trim()}
-                      className="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                    >
-                      {savingNote ? 'Saving...' : 'Save Note'}
-                    </button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Existing Notes */}
-                {caseData.notes && caseData.notes.length > 0 ? (
-                  <div className="space-y-3">
-                    {caseData.notes.map((note) => (
-                      <div key={note.id} className="p-4 border border-gray-200 rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <p className="text-sm">{note.content}</p>
-                            <p className="text-xs text-gray-500 mt-2">
-                              {new Date(note.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <span
-                            className={`px-2 py-1 text-xs rounded ${
-                              note.is_public
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {note.is_public ? 'Public' : 'Private'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-600">No notes yet</p>
-                )}
-              </section>
+              ))}
             </div>
           )}
 
-          {/* Timeline Tab */}
-          {activeTab === 'timeline' && (
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-xl font-semibold mb-4">Stage Timeline</h2>
-                <p className="text-gray-600">Timeline coming soon...</p>
-              </section>
+          {activeTab === 'medical' && (
+            <p style={valueStyle}>Medical information coming soon.</p>
+          )}
+
+          {activeTab === 'communication' && (
+            <div>
+              <div style={{ ...labelStyle, marginBottom: '14px' }}>Communication Log</div>
+              {caseData.communication_log && caseData.communication_log.length > 0
+                ? caseData.communication_log.map(entry => (
+                  <div key={entry.id} style={card}>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{entry.type}</div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)', marginBottom: '6px' }}>{entry.outcome}</div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{new Date(entry.created_at).toLocaleDateString()}</div>
+                  </div>
+                ))
+                : <p style={valueStyle}>No communication logged yet.</p>
+              }
             </div>
+          )}
+
+          {activeTab === 'bids' && (
+            <div>
+              <div style={{ ...labelStyle, marginBottom: '14px' }}>Offers Received</div>
+              {caseData.bids && caseData.bids.filter(b => !b.is_phantom).length > 0
+                ? caseData.bids.filter(b => !b.is_phantom).map(bid => (
+                  <div key={bid.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{bid.buyer}</div>
+                      <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontSize: '20px', color: 'var(--lf-ink)' }}>
+                        ${(bid.amount / 1000).toFixed(0)}K
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>
+                      {new Date(bid.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+                : <p style={valueStyle}>No offers yet.</p>
+              }
+            </div>
+          )}
+
+          {activeTab === 'documents' && (
+            <div>
+              <div style={{ ...labelStyle, marginBottom: '14px' }}>Documents</div>
+              {caseData.documents && caseData.documents.length > 0
+                ? caseData.documents.map(doc => (
+                  <div key={doc.id} style={card}>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '4px' }}>{doc.file_name}</div>
+                    <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{doc.document_type}</div>
+                  </div>
+                ))
+                : <p style={valueStyle}>No documents uploaded.</p>
+              }
+            </div>
+          )}
+
+          {activeTab === 'notes' && (
+            <div>
+              {/* Add Note */}
+              <div style={{ ...card, marginBottom: '24px' }}>
+                <div style={{ ...labelStyle, marginBottom: '10px' }}>Add Note</div>
+                <textarea
+                  value={newNote}
+                  onChange={e => setNewNote(e.target.value)}
+                  placeholder="Write a note…"
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    backgroundColor: 'var(--lf-parchment)',
+                    border: '1px solid var(--lf-rule-mid)',
+                    borderRadius: '2px',
+                    fontFamily: 'Sohne, sans-serif',
+                    fontSize: '13px',
+                    color: 'var(--lf-ink)',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-warm-gray)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={newNotePublic} onChange={e => setNewNotePublic(e.target.checked)} />
+                    Visible to Jim
+                  </label>
+                  <button
+                    onClick={handleSaveNote}
+                    disabled={savingNote || !newNote.trim()}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: 'var(--lf-ink)',
+                      color: 'var(--lf-parchment)',
+                      border: 'none',
+                      borderRadius: '2px',
+                      fontFamily: 'Sohne, sans-serif',
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      cursor: savingNote ? 'not-allowed' : 'pointer',
+                      opacity: savingNote || !newNote.trim() ? 0.5 : 1,
+                    }}
+                  >
+                    {savingNote ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Notes list */}
+              {caseData.notes && caseData.notes.length > 0
+                ? caseData.notes.map(note => (
+                  <div key={note.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-ink)', marginBottom: '8px', lineHeight: 1.6 }}>{note.content}</div>
+                      <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '11px', color: 'var(--lf-warm-gray)' }}>{new Date(note.created_at).toLocaleDateString()}</div>
+                    </div>
+                    <span style={{
+                      fontFamily: 'Sohne, sans-serif',
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: note.is_public ? 'var(--status-green)' : 'var(--lf-warm-gray)',
+                      flexShrink: 0,
+                    }}>
+                      {note.is_public ? 'Public' : 'Private'}
+                    </span>
+                  </div>
+                ))
+                : <p style={valueStyle}>No notes yet.</p>
+              }
+            </div>
+          )}
+
+          {activeTab === 'timeline' && (
+            <p style={valueStyle}>Timeline coming soon.</p>
           )}
         </div>
 
         {/* Sidebar */}
-        <div className="col-span-1">
-          {/* Alert */}
-          <div className="p-4 border border-gray-200 rounded-lg mb-6">
-            <h3 className="font-semibold text-sm mb-2">Status</h3>
-            <div
-              className="px-3 py-2 rounded text-white text-sm"
-              style={{ backgroundColor: getAlertColor(caseData.alertInfo.status) }}
-            >
-              {caseData.alertInfo.status.toUpperCase()}
+        <div>
+          <div style={card}>
+            <div style={labelStyle}>Alert Status</div>
+            <div style={{
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '11px',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: statusColor(caseData.alertInfo.status),
+              border: `1px solid ${statusColor(caseData.alertInfo.status)}`,
+              padding: '4px 10px',
+              borderRadius: '2px',
+              display: 'inline-block',
+              marginBottom: caseData.alertInfo.reason ? '8px' : 0,
+            }}>
+              {caseData.alertInfo.status}
             </div>
             {caseData.alertInfo.reason && (
-              <p className="text-xs text-gray-600 mt-2">{caseData.alertInfo.reason}</p>
+              <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: 'var(--lf-warm-gray)' }}>
+                {caseData.alertInfo.reason}
+              </div>
             )}
           </div>
 
-          {/* Stage */}
-          <div className="p-4 border border-gray-200 rounded-lg mb-6">
-            <h3 className="font-semibold text-sm mb-2">Current Stage</h3>
-            <p className="text-sm capitalize">{caseData.stage}</p>
+          <div style={card}>
+            <div style={labelStyle}>Stage</div>
+            <div style={valueStyle}>{caseData.stage}</div>
           </div>
 
-          {/* Activity */}
-          <div className="p-4 border border-gray-200 rounded-lg mb-6">
-            <h3 className="font-semibold text-sm mb-2">Last Contact</h3>
-            {caseData.last_contact_date ? (
-              <p className="text-sm">
-                {new Date(caseData.last_contact_date).toLocaleDateString()}
-              </p>
-            ) : (
-              <p className="text-sm text-gray-600">No contact recorded</p>
-            )}
+          <div style={card}>
+            <div style={labelStyle}>Last Contact</div>
+            <div style={valueStyle}>
+              {caseData.last_contact_date
+                ? new Date(caseData.last_contact_date).toLocaleDateString()
+                : 'None recorded'}
+            </div>
           </div>
 
-          {/* Insured Info */}
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <h3 className="font-semibold text-sm mb-2">Insured Info</h3>
+          <div style={card}>
+            <div style={labelStyle}>Insured</div>
             {caseData.insured.phone && (
-              <p className="text-xs text-gray-600">{caseData.insured.phone}</p>
+              <div style={{ ...valueStyle, marginBottom: '4px' }}>{caseData.insured.phone}</div>
             )}
             {caseData.insured.email && (
-              <p className="text-xs text-gray-600">{caseData.insured.email}</p>
+              <div style={{ ...valueStyle, fontSize: '12px', color: 'var(--lf-warm-gray)' }}>{caseData.insured.email}</div>
             )}
           </div>
         </div>

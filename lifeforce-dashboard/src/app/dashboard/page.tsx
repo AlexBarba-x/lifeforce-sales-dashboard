@@ -11,69 +11,136 @@ interface Case {
   alertInfo: { status: string; reason?: string }
 }
 
-const alertBadgeStyle = (status: string): React.CSSProperties => {
-  if (status === 'red') return { background: '#FEE2E2', color: '#DC2626', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }
-  if (status === 'yellow') return { background: '#FEF3C7', color: '#B45309', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }
-  return { background: '#ECFDF5', color: '#059669', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }
+const badgeStyle = (status: string): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 10px',
+    borderRadius: '2px',
+    fontFamily: 'Sohne, sans-serif',
+    fontSize: '11px',
+    fontWeight: 500,
+    letterSpacing: '0.04em',
+    whiteSpace: 'nowrap',
+    border: '1px solid',
+  }
+  if (status === 'red') return { ...base, color: 'var(--status-red)', borderColor: 'var(--status-red)', backgroundColor: 'transparent' }
+  if (status === 'yellow') return { ...base, color: 'var(--status-amber)', borderColor: 'var(--status-amber)', backgroundColor: 'transparent' }
+  return { ...base, color: 'var(--status-green)', borderColor: 'var(--status-green)', backgroundColor: 'transparent' }
 }
 
-const dotStyle = (color: string): React.CSSProperties => ({
-  width: 10, height: 10, borderRadius: '50%', background: color,
-  display: 'inline-block', marginRight: 8, flexShrink: 0,
+const sectionDotStyle = (status: string): React.CSSProperties => ({
+  width: '7px',
+  height: '7px',
+  borderRadius: '50%',
+  backgroundColor: status === 'red' ? 'var(--status-red)' : status === 'yellow' ? 'var(--status-amber)' : 'var(--status-green)',
+  display: 'inline-block',
+  marginRight: '10px',
+  flexShrink: 0,
 })
 
 function CaseCard({ c, status }: { c: Case; status: string }) {
   const faceM = c.policies[0]?.face_amount
-  const faceLabel = faceM >= 1000000
-    ? `$${(faceM / 1000000).toFixed(1)}M`
-    : `$${(faceM / 1000).toFixed(0)}K`
+  const faceLabel = faceM
+    ? faceM >= 1000000
+      ? `$${(faceM / 1000000).toFixed(1)}M`
+      : `$${(faceM / 1000).toFixed(0)}K`
+    : '—'
 
   return (
     <Link href={`/dashboard/cases/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
       <div style={{
-        background: 'white', border: '1px solid #e0e0e0', borderRadius: 8,
-        padding: 16, cursor: 'pointer', display: 'flex',
-        justifyContent: 'space-between', alignItems: 'center', gap: 16,
-        transition: 'box-shadow 0.2s',
-      }}
-        onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)')}
-        onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-      >
+        backgroundColor: 'var(--lf-surface)',
+        border: '1px solid var(--lf-rule)',
+        borderRadius: '2px',
+        padding: '16px 20px',
+        cursor: 'pointer',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '16px',
+      }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+          <div style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontWeight: 500,
+            fontSize: '14px',
+            color: 'var(--lf-ink)',
+            marginBottom: '4px',
+          }}>
             {c.insured.first_name} {c.insured.last_name}
           </div>
-          <div style={{ fontSize: 13, color: '#666', display: 'flex', gap: 16 }}>
+          <div style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontSize: '12px',
+            color: 'var(--lf-warm-gray)',
+            display: 'flex',
+            gap: '16px',
+          }}>
             <span>{faceLabel} face</span>
             <span>{c.stage}</span>
           </div>
         </div>
-        {c.alertInfo.reason && (
-          <div style={alertBadgeStyle(status)}>
-            {status === 'red' ? '⚠ ' : status === 'yellow' ? '⚡ ' : '✓ '}{c.alertInfo.reason}
-          </div>
-        )}
-        {!c.alertInfo.reason && (
-          <div style={alertBadgeStyle('green')}>✓ On schedule</div>
-        )}
-        <span style={{ color: '#999', fontSize: 18 }}>→</span>
+
+        <div style={badgeStyle(status)}>
+          {c.alertInfo.reason || 'On schedule'}
+        </div>
+
+        <span style={{
+          fontFamily: 'Sohne, sans-serif',
+          fontSize: '14px',
+          color: 'var(--lf-warm-gray)',
+        }}>→</span>
       </div>
     </Link>
   )
 }
 
-function AlertSection({ title, count, dotColor, cases, status }: {
-  title: string; count: number; dotColor: string; cases: Case[]; status: string
+function AlertSection({ title, count, status, cases }: {
+  title: string; count: number; status: string; cases: Case[]
 }) {
   return (
-    <div style={{ marginBottom: 40 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', color: '#666', marginBottom: 16, display: 'flex', alignItems: 'center' }}>
-        <span style={dotStyle(dotColor)} />
-        {title} — {count} Case{count !== 1 ? 's' : ''}
+    <div style={{ marginBottom: '40px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '14px',
+      }}>
+        <span style={sectionDotStyle(status)} />
+        <span style={{
+          fontFamily: 'Sohne, sans-serif',
+          fontWeight: 500,
+          fontSize: '10px',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'var(--lf-warm-gray)',
+        }}>
+          {title}
+        </span>
+        <span style={{
+          fontFamily: 'Canela, serif',
+          fontStyle: 'italic',
+          fontWeight: 300,
+          fontSize: '15px',
+          color: 'var(--lf-warm-gray)',
+          marginLeft: '10px',
+        }}>
+          {count}
+        </span>
       </div>
-      <div style={{ display: 'grid', gap: 12 }}>
+      <div style={{ display: 'grid', gap: '8px' }}>
         {cases.length === 0
-          ? <div style={{ padding: 16, background: 'white', borderRadius: 8, border: '1px solid #e0e0e0', color: '#999', fontSize: 14 }}>None</div>
+          ? (
+            <div style={{
+              padding: '14px 20px',
+              backgroundColor: 'var(--lf-surface)',
+              border: '1px solid var(--lf-rule)',
+              borderRadius: '2px',
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '13px',
+              color: 'var(--lf-warm-gray)',
+            }}>
+              None
+            </div>
+          )
           : cases.map(c => <CaseCard key={c.id} c={c} status={status} />)
         }
       </div>
@@ -93,25 +160,58 @@ export default function DashboardPage() {
       .catch(() => setLoading(false))
   }, [])
 
+  const totalCases = cases.red.length + cases.yellow.length + cases.green.length
+
   return (
     <div>
       {/* Page Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 32, fontWeight: 400, marginBottom: 8 }}>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{
+          fontFamily: 'Canela, serif',
+          fontWeight: 300,
+          fontStyle: 'italic',
+          fontSize: '36px',
+          color: 'var(--lf-ink)',
+          letterSpacing: '-0.02em',
+          marginBottom: '6px',
+        }}>
           Dashboard
         </h1>
-        <p style={{ fontSize: 14, color: '#666' }}>Your cases at a glance. Focus on what needs attention.</p>
+        <p style={{
+          fontFamily: 'Sohne, sans-serif',
+          fontSize: '13px',
+          color: 'var(--lf-warm-gray)',
+        }}>
+          {totalCases} active case{totalCases !== 1 ? 's' : ''} · {cases.red.length} need{cases.red.length === 1 ? 's' : ''} immediate attention
+        </p>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid #e0e0e0', marginBottom: 32 }}>
+      <div style={{
+        display: 'flex',
+        gap: '0',
+        borderBottom: '1px solid var(--lf-rule)',
+        marginBottom: '36px',
+      }}>
         {['attention', 'pipeline'].map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            padding: '12px 0', border: 'none', background: 'none', cursor: 'pointer',
-            fontSize: 14, fontWeight: 500, textTransform: 'capitalize',
-            borderBottom: `2px solid ${activeTab === tab ? '#1a1a1a' : 'transparent'}`,
-            color: activeTab === tab ? '#1a1a1a' : '#999',
-          }}>
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '12px 0',
+              marginRight: '28px',
+              border: 'none',
+              borderBottom: `2px solid ${activeTab === tab ? 'var(--lf-ink)' : 'transparent'}`,
+              background: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '12px',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: activeTab === tab ? 'var(--lf-ink)' : 'var(--lf-warm-gray)',
+            }}
+          >
             {tab}
           </button>
         ))}
@@ -120,18 +220,24 @@ export default function DashboardPage() {
       {/* Attention Tab */}
       {activeTab === 'attention' && (
         loading
-          ? <p style={{ color: '#666', fontSize: 14 }}>Loading cases…</p>
-          : <>
-            <AlertSection title="Needs Attention Now" count={cases.red.length} dotColor="#DC2626" cases={cases.red} status="red" />
-            <AlertSection title="Pending Action" count={cases.yellow.length} dotColor="#F59E0B" cases={cases.yellow} status="yellow" />
-            <AlertSection title="On Track" count={cases.green.length} dotColor="#10B981" cases={cases.green} status="green" />
-          </>
+          ? (
+            <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+              Loading…
+            </p>
+          )
+          : (
+            <>
+              <AlertSection title="Needs Attention Now" count={cases.red.length} status="red" cases={cases.red} />
+              <AlertSection title="Pending Action" count={cases.yellow.length} status="yellow" cases={cases.yellow} />
+              <AlertSection title="On Track" count={cases.green.length} status="green" cases={cases.green} />
+            </>
+          )
       )}
 
       {activeTab === 'pipeline' && (
-        <div>
-          <p style={{ color: '#666', fontSize: 14 }}>Pipeline view coming soon.</p>
-        </div>
+        <p style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: 'var(--lf-warm-gray)' }}>
+          Pipeline view coming soon.
+        </p>
       )}
     </div>
   )

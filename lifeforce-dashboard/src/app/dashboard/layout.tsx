@@ -28,34 +28,75 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isDashboardHome = pathname === '/dashboard'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F2EC', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--lf-parchment)', display: 'flex', flexDirection: 'column' }}>
+
       {/* Header */}
       <header style={{
-        background: 'white',
-        borderBottom: '1px solid #e0e0e0',
-        padding: '16px 24px',
+        backgroundColor: 'var(--lf-surface)',
+        borderBottom: '1px solid var(--lf-rule)',
+        padding: '0 40px',
+        height: '56px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         position: 'sticky',
         top: 0,
         zIndex: 10,
+        flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20 }}>
-          <div style={{
-            width: 36, height: 36, background: '#1a1a1a', borderRadius: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-inter), sans-serif',
-          }}>L</div>
-          <span>Lifeforce</span>
+        {/* Wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{
+            fontFamily: 'Canela, serif',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            fontSize: '18px',
+            color: 'var(--lf-ink)',
+            letterSpacing: '-0.01em',
+          }}>
+            Lifeforce
+          </span>
+          <span style={{
+            width: '1px',
+            height: '16px',
+            backgroundColor: 'var(--lf-rule-mid)',
+            display: 'inline-block',
+          }} />
+          <span style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontWeight: 800,
+            fontSize: '9px',
+            letterSpacing: '0.14em',
+            color: 'var(--lf-warm-gray)',
+            textTransform: 'uppercase',
+          }}>
+            Financial
+          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>{userEmail}</span>
+
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <span style={{
+            fontFamily: 'Sohne, sans-serif',
+            fontSize: '12px',
+            color: 'var(--lf-warm-gray)',
+          }}>
+            {userEmail}
+          </span>
           <button
             onClick={handleSignOut}
             style={{
-              padding: '8px 16px', background: '#f0f0f0', border: 'none',
-              borderRadius: 6, cursor: 'pointer', fontSize: 13,
+              padding: '7px 14px',
+              backgroundColor: 'transparent',
+              border: '1px solid var(--lf-rule-mid)',
+              borderRadius: '2px',
+              cursor: 'pointer',
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '11px',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: 'var(--lf-warm-gray)',
             }}
           >
             Sign Out
@@ -63,49 +104,68 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
         {/* Sidebar */}
         <aside style={{
-          width: 240, background: 'white', borderRight: '1px solid #e0e0e0',
-          padding: '24px 0', display: 'flex', flexDirection: 'column', flexShrink: 0,
+          width: '220px',
+          backgroundColor: 'var(--lf-surface)',
+          borderRight: '1px solid var(--lf-rule)',
+          padding: '32px 0',
+          display: 'flex',
+          flexDirection: 'column',
+          flexShrink: 0,
         }}>
-          <div style={{ padding: '0 16px', marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 12, padding: '0 8px' }}>
-              Dashboard
+          <div style={{ padding: '0 20px', marginBottom: '8px' }}>
+            <div style={{
+              fontFamily: 'Sohne, sans-serif',
+              fontWeight: 500,
+              fontSize: '9px',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'var(--lf-warm-gray)',
+              marginBottom: '12px',
+              paddingLeft: '12px',
+            }}>
+              Views
             </div>
+
             <Link href="/dashboard" style={{ textDecoration: 'none' }}>
               <div style={{
-                padding: '10px 12px', borderRadius: 6, cursor: 'pointer',
-                fontSize: 14, marginBottom: 6,
-                background: isDashboardHome ? '#1a1a1a' : 'transparent',
-                color: isDashboardHome ? 'white' : '#1a1a1a',
+                padding: '9px 12px',
+                borderRadius: '2px',
+                cursor: 'pointer',
+                fontFamily: 'Sohne, sans-serif',
+                fontSize: '13px',
+                marginBottom: '2px',
+                backgroundColor: isDashboardHome ? 'var(--lf-ink)' : 'transparent',
+                color: isDashboardHome ? 'var(--lf-parchment)' : 'var(--lf-ink)',
                 fontWeight: isDashboardHome ? 500 : 400,
               }}>
                 Attention
               </div>
             </Link>
+
             <div style={{
-              padding: '10px 12px', borderRadius: 6, cursor: 'pointer',
-              fontSize: 14, color: '#999',
+              padding: '9px 12px',
+              borderRadius: '2px',
+              cursor: 'not-allowed',
+              fontFamily: 'Sohne, sans-serif',
+              fontSize: '13px',
+              color: 'var(--lf-warm-gray)',
             }}>
               Pipeline
-            </div>
-          </div>
-
-          <div style={{ padding: '0 24px', marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 12 }}>
-              Cases
-            </div>
-            <div style={{ fontSize: 13, color: '#666', lineHeight: 2 }}>
-              <div>3 Red</div>
-              <div>2 Yellow</div>
-              <div>2 Green</div>
             </div>
           </div>
         </aside>
 
         {/* Main */}
-        <main style={{ flex: 1, padding: 32, overflowY: 'auto' }}>
+        <main style={{
+          flex: 1,
+          padding: '48px 56px',
+          overflowY: 'auto',
+          backgroundColor: 'var(--lf-parchment)',
+        }}>
           {children}
         </main>
       </div>
