@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { COLORS, TYPE, TYPE_SCALE } from '@/lib/design'
+import { COLORS, TYPE, TYPE_SCALE, humanize } from '@/lib/design'
 
 interface Lead {
   id: string
@@ -42,10 +42,12 @@ function formatDate(iso: string | null): string {
 }
 
 const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
-  new:          { color: '#3060A0', bg: '#E4EAF4' },
-  qualified:    { color: '#5B7B6F', bg: '#EBF1EE' },
-  disqualified: { color: '#C4452C', bg: '#F4E4E1' },
-  converted:    { color: '#FFFFFF', bg: '#5B7B6F' },
+  new:                { color: '#3060A0', bg: '#E4EAF4' },
+  qualified:          { color: '#5B7B6F', bg: '#EBF1EE' },
+  disqualified:       { color: '#C4452C', bg: '#F4E4E1' },
+  converted:          { color: '#FFFFFF', bg: '#5B7B6F' },
+  closed_converted:   { color: '#FFFFFF', bg: '#5B7B6F' },
+  closed_disqualified:{ color: '#C4452C', bg: '#F4E4E1' },
 }
 
 const STATUS_FILTERS = ['All', 'new', 'qualified', 'disqualified', 'converted']
@@ -72,11 +74,13 @@ export default function LeadsPage() {
       .catch(() => setLoading(false))
   }, [])
 
+  const norm = (s: string | null) => (s ?? '').toLowerCase()
+
   const kpis = useMemo(() => ({
     total: leads.length,
-    qualified: leads.filter(l => l.lead_status === 'qualified').length,
-    disqualified: leads.filter(l => l.lead_status === 'disqualified').length,
-    converted: leads.filter(l => l.lead_status === 'converted').length,
+    qualified: leads.filter(l => norm(l.lead_status) === 'qualified').length,
+    disqualified: leads.filter(l => norm(l.lead_status) === 'disqualified').length,
+    converted: leads.filter(l => ['converted', 'closed_converted'].includes(norm(l.lead_status))).length,
   }), [leads])
 
   const filtered = useMemo(() => {
@@ -89,7 +93,11 @@ export default function LeadsPage() {
       })
     }
     if (statusFilter !== 'All') {
-      list = list.filter(l => l.lead_status === statusFilter)
+      list = list.filter(l => {
+        const n = norm(l.lead_status)
+        if (statusFilter === 'converted') return ['converted', 'closed_converted'].includes(n)
+        return n === statusFilter
+      })
     }
     return list
   }, [leads, search, statusFilter])
@@ -234,7 +242,8 @@ export default function LeadsPage() {
               const insuredName = (firstName || lastName)
                 ? `${firstName ?? ''} ${lastName ?? ''}`.trim()
                 : '—'
-              const status = lead.lead_status ?? 'new'
+              const rawStatus = lead.lead_status ?? 'new'
+              const status = norm(rawStatus)
               const statusStyle = STATUS_STYLES[status] || { color: '#7A7A7A', bg: '#F0EFED' }
 
               return (
@@ -302,10 +311,9 @@ export default function LeadsPage() {
                     fontSize: '11px',
                     fontWeight: 600,
                     letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
                     whiteSpace: 'nowrap',
                   }}>
-                    {status}
+                    {humanize(rawStatus)}
                   </span>
                   <span style={{
                     fontFamily: 'Sohne, sans-serif',

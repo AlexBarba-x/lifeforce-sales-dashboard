@@ -46,7 +46,12 @@ function mapPolicyToCase(policy: any, pendingLeInsuredIds: Set<string>) {
       summary: policy.notes ?? '',
     },
     next_action: undefined,
-    owner: { id: 'user-alex', name: 'Alex Barba', initials: 'AB' },
+    owner: (() => {
+      const fn = isAnon ? '' : (insured.first_name ?? '')
+      const ln = isAnon ? '' : (insured.last_name ?? '')
+      const initials = [fn[0], ln[0]].filter(Boolean).join('').toUpperCase() || '?'
+      return { id: 'insured', name: `${fn} ${ln}`.trim(), initials }
+    })(),
     source: 'originated',
     probability: undefined,
     expected_close: undefined,

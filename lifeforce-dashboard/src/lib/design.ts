@@ -9,6 +9,15 @@
  * column rails) and switched the data area to surface-white.
  */
 
+// ── String helpers ──────────────────────────────────────────────────────
+export function humanize(s: string | null | undefined): string {
+  if (!s) return '—'
+  return s
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+}
+
 // ── Brand & surface ──────────────────────────────────────────────────────
 export const COLORS = {
   parchment: '#F5F3EF',

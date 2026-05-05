@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { humanize } from '@/lib/design'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -957,9 +958,9 @@ export default function CaseDetailPage() {
           {[
             { label: 'Age', value: caseData.insured.age ? String(caseData.insured.age) : '—' },
             { label: 'Face Value', value: policy ? `$${(policy.face_amount / 1000000).toFixed(1)}M` : '—' },
-            { label: 'Policy Type', value: policy?.policy_type || '—' },
+            { label: 'Policy Type', value: humanize(policy?.policy_type) },
             { label: 'Carrier', value: policy?.carrier || '—' },
-            { label: 'Gender / State', value: [caseData.insured.gender, caseData.insured.residence_state].filter(Boolean).join(' · ') || '—' },
+            { label: 'Gender / State', value: [humanize(caseData.insured.gender), caseData.insured.residence_state].filter(s => s && s !== '—').join(' · ') || '—' },
           ].map((item, i, arr) => (
             <div key={item.label} style={{ padding: '12px 20px', borderRight: i < arr.length - 1 ? '1px solid var(--lf-rule)' : 'none', flex: i === 3 ? 1 : 'none' }}>
               <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '10px', color: '#9A9A9A', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{item.label}</div>
@@ -1064,7 +1065,7 @@ export default function CaseDetailPage() {
                 <Card key={pol.id}>
                   <SectionHeader title="Policy Information" />
                   <div style={{ fontFamily: 'Canela, serif', fontStyle: 'italic', fontWeight: 300, fontSize: '22px', color: '#2A2A2A', marginBottom: '20px' }}>
-                    {pol.carrier}{pol.policy_type ? ` ${pol.policy_type}` : ''}
+                    {pol.carrier}{pol.policy_type ? ` ${humanize(pol.policy_type)}` : ''}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
                     {[
@@ -1096,7 +1097,7 @@ export default function CaseDetailPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
                   {[
                     { label: 'Date of Birth', value: caseData.insured.dob ? fmtDate(caseData.insured.dob, { month: 'long', day: 'numeric', year: 'numeric' }) : '—' },
-                    { label: 'Health Status', value: caseData.insured.health_status || '—' },
+                    { label: 'Health Status', value: humanize(caseData.insured.health_status) },
                     { label: 'Phone', value: caseData.insured.phone || '—' },
                     { label: 'Email', value: caseData.insured.email || '—' },
                     { label: 'State', value: caseData.insured.residence_state || '—' },

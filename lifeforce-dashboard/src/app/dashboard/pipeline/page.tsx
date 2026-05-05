@@ -188,12 +188,14 @@ function PipelineColumn({
   return (
     <div style={{
       flex: `0 0 ${width}px`,
+      minWidth: `${width}px`,
       backgroundColor: COLORS.parchmentDeep,
       border: `1px solid ${COLORS.rule}`,
       borderRadius: '4px',
       display: 'flex',
       flexDirection: 'column',
       maxHeight: 'calc(100vh - 280px)',
+      overflow: 'hidden',
     }}>
       {/* Header */}
       <div style={{

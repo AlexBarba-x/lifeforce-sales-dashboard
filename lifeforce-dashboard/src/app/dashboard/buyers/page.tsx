@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { humanize } from '@/lib/design'
 
 interface Contact {
   id: string
@@ -193,7 +194,7 @@ export default function BuyersPage() {
                       borderRadius: '9999px',
                       padding: '2px 10px',
                     }}>
-                      {buyer.account_type}
+                      {humanize(buyer.account_type)}
                     </span>
                   )}
                 </div>
