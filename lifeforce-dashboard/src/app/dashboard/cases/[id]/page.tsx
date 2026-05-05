@@ -233,8 +233,8 @@ interface CaseDetail {
 // ─── Style helpers ─────────────────────────────────────────────────────────────
 
 const STAGE_LABELS: Record<string, string> = {
-  intake: 'INTAKE', underwriting: 'UNDERWRITING', market: 'MARKET',
-  working: 'WORKING', closing: 'CLOSING', closed: 'CLOSED',
+  intake: 'Intake', underwriting: 'Underwriting', market: 'Market',
+  working: 'Working', closing: 'Closing', closed: 'Closed',
 }
 
 const fl: React.CSSProperties = { fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: '#7A7A7A', marginBottom: '3px' }
@@ -499,7 +499,7 @@ function RequirementsSection({ requirements }: { requirements: PolicyRequirement
       <SectionHeader title="Requirements Checklist" />
       {Object.entries(grouped).map(([cat, items]) => (
         <div key={cat} style={{ marginBottom: '16px' }}>
-          <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#7A7A7A', marginBottom: '8px' }}>{cat}</div>
+          <div style={{ fontFamily: 'Sohne, sans-serif', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#7A7A7A', marginBottom: '8px' }}>{humanize(cat)}</div>
           {items.map(item => {
             const isReceived = item.status === 'received' || !!item.received_date
             const isStale = !isReceived && item.requested_date
