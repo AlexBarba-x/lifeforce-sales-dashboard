@@ -88,10 +88,16 @@ function PipelineCard({ c, density }: { c: CaseV2; density: Density }) {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
         }}>
           {c.insured.is_anonymous
             ? <><span style={{ fontStyle: 'italic', color: COLORS.warmGray }}>Anonymous</span>{' '}<span style={{ fontSize: '9px', letterSpacing: '0.06em', fontWeight: 600, color: '#7A7570', background: '#EAE6DF', borderRadius: '3px', padding: '1px 5px' }}>ANON</span></>
             : <>{c.insured.last_name}, {c.insured.first_name}</>}
+          {(c as any).has_pending_le && (
+            <span style={{ fontSize: '9px', letterSpacing: '0.06em', fontWeight: 600, color: '#D4A017', background: '#F5EAD8', borderRadius: '3px', padding: '1px 5px', flexShrink: 0 }}>LE PENDING</span>
+          )}
         </div>
 
         {/* Slot 2: Condition — small (13px/400/#6B6862) */}

@@ -9,9 +9,11 @@ import { Kbd } from '@/components/ui/Kbd'
 
 const NAV = [
   { label: 'Today',      href: '/dashboard',             shortcut: 'T' },
+  { label: 'Leads',      href: '/dashboard/leads',       shortcut: 'L' },
   { label: 'Pipeline',   href: '/dashboard/pipeline',    shortcut: 'P' },
   { label: 'Cases',      href: '/dashboard/cases',       shortcut: 'A' },
   { label: 'Portfolios', href: '/dashboard/portfolios',  shortcut: 'O' },
+  { label: 'Buyers',     href: '/dashboard/buyers',      shortcut: 'B' },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

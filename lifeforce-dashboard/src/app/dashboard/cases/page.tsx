@@ -380,6 +380,9 @@ export default function AllCasesPage() {
                         {c.insured.is_anonymous && (
                           <span style={{ fontSize: '9px', fontStyle: 'normal', letterSpacing: '0.06em', fontFamily: 'Söhne, sans-serif', fontWeight: 600, color: '#7A7570', background: '#EAE6DF', borderRadius: '3px', padding: '1px 5px' }}>ANON</span>
                         )}
+                        {(c as any).has_pending_le && (
+                          <span style={{ fontSize: '9px', fontStyle: 'normal', letterSpacing: '0.06em', fontFamily: 'Sohne, sans-serif', fontWeight: 600, color: '#D4A017', background: '#F5EAD8', borderRadius: '3px', padding: '1px 5px', flexShrink: 0 }}>LE PENDING</span>
+                        )}
                       </div>
                       {density === 'comfortable' && (
                         <div style={{ ...TYPE.micro, color: COLORS.warmGray, fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

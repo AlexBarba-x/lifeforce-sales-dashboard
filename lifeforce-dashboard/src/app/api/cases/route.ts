@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(
 
 const STAGE_ORDER = ['intake', 'underwriting', 'market', 'working', 'closing', 'closed']
 
-function mapPolicyToCase(policy: any) {
+function mapPolicyToCase(policy: any, pendingLeInsuredIds: Set<string>) {
   const insured = policy.insureds ?? {}
   const isAnon = insured.is_anonymous === true
 
@@ -20,6 +20,7 @@ function mapPolicyToCase(policy: any) {
   const lastName = isAnon ? '' : (insured.last_name ?? '')
 
   const alertInfo = calculateAlertStatus(policy.updated_at)
+  const insuredId = insured.id ?? null
 
   return {
     id: policy.id,
@@ -49,6 +50,7 @@ function mapPolicyToCase(policy: any) {
     source: 'originated',
     probability: undefined,
     expected_close: undefined,
+    has_pending_le: insuredId ? pendingLeInsuredIds.has(insuredId) : false,
   }
 }
 
@@ -113,23 +115,35 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const groupBy = searchParams.get('groupBy')
 
-  const { data, error } = await supabaseAdmin
-    .from('policies')
-    .select(`
-      id, policy_number, carrier, death_benefit, stage, annual_premium,
-      policy_type, issue_date, notes, created_at, updated_at,
-      insureds (first_name, last_name, dob, gender, health_status,
-                primary_medical_condition, residence_state, is_anonymous, anonymous_alias)
-    `)
-    .eq('source_type', 'originated')
-    .order('updated_at', { ascending: false })
+  const [policiesResult, leReportsResult] = await Promise.all([
+    supabaseAdmin
+      .from('policies')
+      .select(`
+        id, policy_number, carrier, death_benefit, stage, annual_premium,
+        policy_type, issue_date, notes, created_at, updated_at,
+        insureds (id, first_name, last_name, dob, gender, health_status,
+                  primary_medical_condition, residence_state, is_anonymous, anonymous_alias)
+      `)
+      .eq('source_type', 'originated')
+      .order('updated_at', { ascending: false }),
+    supabaseAdmin
+      .from('le_reports')
+      .select('insured_id, received_date')
+      .is('received_date', null),
+  ])
 
+  const { data, error } = policiesResult
   if (error) {
     console.error('Supabase error fetching policies:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const cases = (data ?? []).map(mapPolicyToCase)
+  // Build set of insured_ids that have pending (unrecived) LE reports
+  const pendingLeInsuredIds = new Set<string>(
+    ((leReportsResult.data ?? []) as any[]).map((r: any) => r.insured_id).filter(Boolean)
+  )
+
+  const cases = (data ?? []).map((p) => mapPolicyToCase(p, pendingLeInsuredIds))
 
   if (groupBy === 'alertStatus') {
     return NextResponse.json(groupByAlertStatus(cases))

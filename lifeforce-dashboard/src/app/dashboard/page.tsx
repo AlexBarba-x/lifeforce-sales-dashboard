@@ -377,12 +377,36 @@ function Stack({
 }
 
 // ── Main: Today view ────────────────────────────────────────────────────
+interface PendingApproval {
+  id: string
+  entity_type: string | null
+  action_type: string | null
+  requested_by: string | null
+  created_at: string
+  status: string | null
+}
+
+function timeAgo(iso: string): string {
+  const now = new Date()
+  const then = new Date(iso)
+  const diffMs = now.getTime() - then.getTime()
+  const diffMin = Math.round(diffMs / 60000)
+  if (diffMin < 1)   return 'just now'
+  if (diffMin < 60)  return `${diffMin}m ago`
+  const diffHr = Math.round(diffMin / 60)
+  if (diffHr < 24)   return `${diffHr}h ago`
+  const diffDay = Math.round(diffHr / 24)
+  if (diffDay < 30)  return `${diffDay}d ago`
+  return `${Math.round(diffDay / 30)}mo ago`
+}
+
 export default function TodayPage() {
   const [allCases, setAllCases] = useState<CaseV2[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set())
   const [undoIds, setUndoIds] = useState<Set<string>>(new Set())
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([])
 
   const markActionDone = useCallback((caseId: string) => {
     setDoneIds(prev => new Set([...prev, caseId]))
@@ -402,6 +426,10 @@ export default function TodayPage() {
       .then(r => r.json())
       .then((d: CaseV2[]) => { setAllCases(d); setLoading(false) })
       .catch(() => setLoading(false))
+    fetch('/api/pending-approvals')
+      .then(r => r.json())
+      .then((d: PendingApproval[]) => { if (Array.isArray(d)) setPendingApprovals(d) })
+      .catch(() => {})
   }, [])
 
   // Filter by search query
@@ -584,6 +612,63 @@ export default function TodayPage() {
               onDone={markActionDone}
               onUndo={undoDone}
             />
+          )}
+
+          {/* Pending Approvals */}
+          {pendingApprovals.length > 0 && (
+            <section style={{ marginBottom: '36px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+                <h2 style={{ fontFamily: 'Sohne, sans-serif', fontSize: '18px', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+                  Pending Approvals
+                </h2>
+                <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: '#6B6B6B' }}>
+                  {pendingApprovals.length} {pendingApprovals.length === 1 ? 'item' : 'items'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {pendingApprovals.map(approval => (
+                  <div key={approval.id} style={{
+                    borderLeft: '3px solid #D4A017',
+                    backgroundColor: '#FFFFFF',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    border: '1px solid #E5E3DF',
+                    borderLeftWidth: '3px',
+                    borderLeftColor: '#D4A017',
+                  }}>
+                    {approval.entity_type && (
+                      <span style={{
+                        fontFamily: 'Sohne, sans-serif',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: '#D4A017',
+                        backgroundColor: '#F5EAD8',
+                        borderRadius: '3px',
+                        padding: '2px 8px',
+                        flexShrink: 0,
+                      }}>
+                        {approval.entity_type}
+                      </span>
+                    )}
+                    <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '13px', color: '#2A2A2A', flex: 1 }}>
+                      {approval.action_type ?? 'Approval required'}
+                    </span>
+                    {approval.requested_by && (
+                      <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: '#7A7A7A' }}>
+                        {approval.requested_by}
+                      </span>
+                    )}
+                    <span style={{ fontFamily: 'Sohne, sans-serif', fontSize: '12px', color: '#9A9A9A', flexShrink: 0 }}>
+                      {timeAgo(approval.created_at)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
         </>
       )}
