@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { COLORS, TYPE } from '@/lib/design'
+import { Kbd } from '@/components/ui/Kbd'
+
+const NAV = [
+  { label: 'Today',      href: '/dashboard',             shortcut: 'T' },
+  { label: 'Pipeline',   href: '/dashboard/pipeline',    shortcut: 'P' },
+  { label: 'Cases',      href: '/dashboard/cases',       shortcut: 'A' },
+  { label: 'Portfolios', href: '/dashboard/portfolios',  shortcut: 'O' },
+]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -11,6 +20,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
+    const isDemoMode =
+      process.env.NEXT_PUBLIC_ALLOW_DEMO_MODE === 'true' &&
+      new URLSearchParams(window.location.search).get('demo') === '1'
+
+    if (isDemoMode) {
+      setUserEmail('demo@lifeforcefinancial.com')
+      return
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.push('/')
@@ -20,128 +38,165 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     })
   }, [router])
 
+  // Keyboard shortcuts: / (focus search) · G T / G P / G A (navigate) · Escape (blur)
+  useEffect(() => {
+    let gPressed = false
+    let gTimeout: ReturnType<typeof setTimeout> | null = null
+
+    const handler = (e: KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement | null
+      const tag = (active?.tagName || '').toLowerCase()
+      const isEditing = tag === 'input' || tag === 'textarea' || active?.isContentEditable
+
+      // Escape — always blur active input
+      if (e.key === 'Escape') {
+        if (isEditing) active?.blur()
+        return
+      }
+
+      // / — focus first [data-search-input], only when not already editing
+      if (e.key === '/' && !isEditing) {
+        const searchInput = document.querySelector<HTMLInputElement>('[data-search-input]')
+        if (searchInput) {
+          e.preventDefault()
+          searchInput.focus()
+        }
+        return
+      }
+
+      // G-chord navigation — ignore when editing
+      if (isEditing) return
+
+      if (e.key === 'g' && !e.metaKey && !e.ctrlKey) {
+        gPressed = true
+        if (gTimeout) clearTimeout(gTimeout)
+        gTimeout = setTimeout(() => { gPressed = false }, 1500)
+        return
+      }
+      if (gPressed) {
+        const k = e.key.toLowerCase()
+        const target = NAV.find(n => n.shortcut.toLowerCase() === k)
+        if (target) {
+          e.preventDefault()
+          router.push(target.href)
+          gPressed = false
+        }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [router])
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const isDashboardHome = pathname === '/dashboard'
+  const isActive = (href: string) => {
+    if (href === '/dashboard') return pathname === '/dashboard'
+    return pathname.startsWith(href)
+  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--lf-parchment)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.parchment, display: 'flex', flexDirection: 'column' }}>
 
-      {/* Header */}
+      {/* Header — parchment, sticky */}
       <header style={{
-        backgroundColor: 'var(--lf-parchment)',
-        padding: '0 40px',
-        height: '70px',
+        backgroundColor: COLORS.parchment,
+        padding: '0 32px',
+        height: '60px',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
         position: 'sticky',
         top: 0,
         zIndex: 10,
         flexShrink: 0,
+        borderBottom: `1px solid ${COLORS.rule}`,
       }}>
         {/* Wordmark */}
-        <div>
-          <div style={{
+        <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <span style={{
             fontFamily: 'Canela, serif',
             fontWeight: 300,
             fontStyle: 'italic',
-            fontSize: '28px',
-            color: 'var(--lf-brand-green)',
+            fontSize: '24px',
+            color: COLORS.brandGreen,
             letterSpacing: '-0.01em',
             lineHeight: 1,
           }}>
             Lifeforce
-          </div>
-          <div style={{
-            fontFamily: 'Sohne, sans-serif',
-            fontWeight: 500,
+          </span>
+          <span style={{
+            ...TYPE.label,
             fontSize: '8px',
-            letterSpacing: '0.22em',
-            color: 'var(--lf-brand-green)',
-            textTransform: 'uppercase',
-            marginTop: '2px',
+            color: COLORS.brandGreen,
+            opacity: 0.7,
           }}>
             Financial
-          </div>
-        </div>
+          </span>
+        </Link>
+
+        {/* Nav */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '40px' }}>
+          {NAV.map(item => {
+            const active = isActive(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  ...TYPE.subtitle,
+                  textDecoration: 'none',
+                  color: active ? COLORS.ink : COLORS.warmGray,
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  backgroundColor: active ? COLORS.surface : 'transparent',
+                  border: `1px solid ${active ? COLORS.rule : 'transparent'}`,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: active ? 700 : 500,
+                }}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
 
         {/* Right side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <span style={{
-            fontFamily: 'Sohne, sans-serif',
-            fontSize: '13px',
-            color: '#3A3A3A',
-          }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ ...TYPE.micro, color: COLORS.warmGray, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <span>Jump:</span>
+            <Kbd>G</Kbd>
+            <span style={{ color: COLORS.mutedGray }}>then</span>
+            <Kbd>T</Kbd>/<Kbd>P</Kbd>/<Kbd>A</Kbd>/<Kbd>O</Kbd>
+          </span>
+          <span style={{ ...TYPE.body, color: COLORS.ink2, fontSize: '12px' }}>
             {userEmail}
           </span>
           <button
             onClick={handleSignOut}
             style={{
-              padding: '10px 18px',
+              ...TYPE.label,
+              padding: '5px 10px',
               backgroundColor: 'transparent',
-              border: '1px solid #C8C4BC',
+              border: `1px solid ${COLORS.rule}`,
+              color: COLORS.warmGray,
               borderRadius: '3px',
               cursor: 'pointer',
-              fontFamily: 'Sohne, sans-serif',
-              fontSize: '11px',
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: '#3A3A3A',
             }}
           >
-            Sign Out
+            Sign out
           </button>
         </div>
       </header>
 
-      {/* Tab navigation below header */}
-      <nav style={{
-        padding: '0 40px',
-        borderBottom: '1px solid var(--lf-sage)',
-        display: 'flex',
-        backgroundColor: 'var(--lf-parchment)',
-      }}>
-        <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-          <div style={{
-            padding: '12px 0',
-            marginRight: '32px',
-            borderBottom: `3px solid ${isDashboardHome ? 'var(--lf-sage)' : 'transparent'}`,
-            fontFamily: 'Sohne, sans-serif',
-            fontWeight: isDashboardHome ? 700 : 500,
-            fontSize: '12px',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: isDashboardHome ? '#2A2A2A' : '#9A9A9A',
-            cursor: 'pointer',
-          }}>
-            Attention
-          </div>
-        </Link>
-        <div style={{
-          padding: '12px 0',
-          fontFamily: 'Sohne, sans-serif',
-          fontWeight: 500,
-          fontSize: '12px',
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: '#9A9A9A',
-          cursor: 'default',
-        }}>
-          Pipeline
-        </div>
-      </nav>
-
-      {/* Main content */}
+      {/* Content */}
       <main style={{
         flex: 1,
-        padding: '32px 40px',
-        overflowY: 'auto',
-        backgroundColor: 'var(--lf-parchment)',
+        backgroundColor: COLORS.parchment,
+        padding: '24px 32px 60px',
       }}>
         {children}
       </main>

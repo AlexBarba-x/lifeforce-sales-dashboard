@@ -104,20 +104,49 @@ export default function CaseDetailPage() {
         marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px',
         color: '#9A9A9A',
       }}>
-        <Link href="/dashboard" style={{ color: 'var(--lf-sage)', textDecoration: 'none' }}>← Dashboard</Link>
+        <Link href="/dashboard/cases" style={{ color: 'var(--lf-sage)', textDecoration: 'none' }}>← All Cases</Link>
         <span>/</span>
-        <span>Case Detail</span>
+        <Link href="/dashboard/pipeline" style={{ color: 'var(--lf-sage)', textDecoration: 'none' }}>Pipeline</Link>
+        <span>/</span>
+        <span>{caseData.insured.last_name}, {caseData.insured.first_name}</span>
       </div>
 
       {/* Page header */}
       <div style={{ marginBottom: '28px' }}>
-        {/* Profile label */}
+        {/* Profile label + urgency */}
         <div style={{
-          fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '10px',
-          letterSpacing: '0.14em', textTransform: 'uppercase',
-          color: 'var(--lf-sage)', marginBottom: '8px',
+          marginBottom: '8px',
+          display: 'flex', alignItems: 'center', gap: '12px',
         }}>
-          Insured Profile · {stageLabel} Stage
+          <span style={{
+            fontFamily: 'Sohne, sans-serif', fontWeight: 500, fontSize: '10px',
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: 'var(--lf-sage)',
+          }}>
+            Insured Profile · {stageLabel} Stage
+          </span>
+          {caseData.alertInfo?.status === 'red' && (
+            <span style={{
+              fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '11px',
+              padding: '3px 10px', borderRadius: '3px',
+              backgroundColor: '#F4E4E1', color: '#B83232', border: '1px solid #B83232',
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#B83232' }} />
+              {caseData.alertInfo.reason || 'Critical'}
+            </span>
+          )}
+          {caseData.alertInfo?.status === 'yellow' && (
+            <span style={{
+              fontFamily: 'Sohne, sans-serif', fontWeight: 600, fontSize: '11px',
+              padding: '3px 10px', borderRadius: '3px',
+              backgroundColor: '#F5EAD8', color: '#B07830', border: '1px solid #B07830',
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#B07830' }} />
+              {caseData.alertInfo.reason || 'Attention'}
+            </span>
+          )}
         </div>
 
         {/* Name + stage badge row */}
